@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brač Sziget: 10 Napos Útiterv</title>
+    <!-- Tailwind CSS CDN betöltése a stílusokhoz -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Egyedi betűtípus beállítása */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden; /* Megakadályozza a vízszintes görgetést */
+        }
+        /* Sorkizárt szöveg beállítása */
+        .text-justify {
+            text-align: justify;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <!-- React és ReactDOM CDN-ek betöltése -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel a JSX fordításához (csak fejlesztéshez, éles környezetben előfordítva!) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script type="text/babel">
+        // React komponens a gyakorlati információk megjelenítéséhez
+        const PracticalInfoBox = ({ info, mapLink, mapText, officialLink }) => (
+            <div className="mt-6 p-4 bg-blue-50 bg-opacity-80 rounded-lg shadow-inner border border-blue-100">
+                <h3 className="text-xl font-bold text-blue-600 mb-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Hasznos tudnivalók:
+                </h3>
+                {info.openingHours && <p className="text-gray-700 mb-1"><strong>Nyitvatartás:</strong> {info.openingHours}</p>}
+                {info.entranceFee && <p className="text-gray-700 mb-1"><strong>Belépődíj:</strong> {info.entranceFee}</p>}
+                {info.bookingInfo && <p className="text-gray-700 mb-1"><strong>Foglalás:</strong> {info.bookingInfo}</p>}
+                {info.accessibility && <p className="text-gray-700 mb-1"><strong>Megközelítés:</strong> {info.accessibility}</p>}
+                {info.notes && <p className="text-gray-700 mb-1"><strong>Megjegyzések:</strong> {info.notes}</p>}
+                {officialLink && (
+                    <p className="mt-3">
+                        <a
+                            href={officialLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-purple-600 hover:text-purple-800 font-semibold underline text-sm flex items-center"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                            Hivatalos információk / Weboldal
+                        </a>
+                    </p>
+                )}
+                {mapLink && (
+                    <p className="mt-2">
+                        <a
+                            href={mapLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 font-semibold underline text-lg flex items-center"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            {mapText}
+                        </a>
+                    </p>
+                )}
+            </div>
+        );
+
+        // Fő React komponens
+        const App = () => {
+            const [selectedDay, setSelectedDay] = React.useState(null);
+            const [listScrollPos, setListScrollPos] = React.useState(0);
+            const [showFullIntro, setShowFullIntro] = React.useState(false); // Új állapot a bevezető kibontásához
+
+            // Görgetés a kiválasztott naphoz és visszaállítása
+            React.useEffect(() => {
+                if (selectedDay !== null) { // Amikor a részletes nézetbe váltunk, görgetés az oldal tetejére
+                    // Kisebb késleltetés a stabil görgetés érdekében
+                    const timer = setTimeout(() => {
+                        window.scrollTo(0, 0);
+                    }, 50);
+                    return () => clearTimeout(timer);
+                } else { // Amikor visszatérünk a lista nézetre, visszaállítjuk a görgetési pozíciót
+                    const timer = setTimeout(() => {
+                        window.scrollTo(0, listScrollPos);
+                    }, 50);
+                    return () => clearTimeout(timer);
+                }
+            }, [selectedDay, listScrollPos]);
+
+            // Effect a hash inicializálására és a hash változások figyelésére
+            React.useEffect(() => {
+                const handleHashChange = () => {
+                    const hash = window.location.hash;
+                    if (hash.startsWith('#/day/')) {
+                        const dayNumber = parseInt(hash.replace('#/day/', ''));
+                        setSelectedDay(dayNumber);
+                    } else {
+                        setSelectedDay(null);
+                    }
+                };
+
+                handleHashChange(); // Kezdeti állapot beállítása
+                window.addEventListener('hashchange', handleHashChange);
+
+                return () => {
+                    window.removeEventListener('hashchange', handleHashChange);
+                };
+            }, []); // Csak egyszer fut le mountoláskor
+
+            // Amikor a listából a részletes nézetre navigálunk, elmentjük a görgetési pozíciót
+            const handleDayClick = (day) => {
+                setListScrollPos(window.scrollY); // Mentjük az aktuális görgetési pozíciót
+                window.location.hash = '#/day/' + day; // Frissítjük az URL hash-t
+            };
+
+            // Amikor a részletes nézetről visszatérünk a listához, visszaállítjuk a görgetési pozíciót
+            const handleBackClick = () => {
+                setSelectedDay(null); // Ez kiváltja a ListView újrarajzolását
+                window.location.hash = ''; // Töröljük a hash-t
+                // A listScrollPos useEffect kezeli a görgetési pozíció visszaállítását
+            };
+
+            // Útiterv adatok - Képek és képhivatkozások teljesen eltávolítva
+            const itinerary = [
+                {
+                    day: 1,
+                    title: 'Érkezés és Sutivan Felfedezése',
+                    shortDescription: 'Sutivan varázsa: Érkezés, kikötői séta és dalmát vacsora.',
+                    description: 'Érkezés Sutivanba, bejelentkezés a szálláshelyre. Kényelmesen berendezkedik, és pihen egy kicsit az utazás után. Sétáljon egyet Sutivan tengerparti sétányán. Fedezze fel a bájos kis kikötőt és a környékbeli öblöket. Vacsorázzon meg egy helyi étteremben, és élvezze az első dalmát estét.',
+                    mapLink: 'https://www.google.com/maps/search/?api=1&query=Sutivan, Brač',
+                    mapText: 'Sutivan a Google Maps-en',
+                    practicalInfo: {
+                        notes: 'Sutivan egy csendesebb, családbarát település, ideális a pihenésre. Számos étterem és kávézó található a parti sétányon.',
+                        accessibility: 'Autóval könnyen megközelíthető, a településen belül gyalogosan kényelmesen bejárható.',
+                        officialLink: 'https://www.visitsutivan.com/'
+                    },
+                    sights: [],
+                },
+                {
+                    day: 2,
+                    title: 'Supetar és az Északi Parti Varázs',
+                    shortDescription: 'Supetar történelme és strandjai: Templomok, mauzóleum, fürdőzés.',
+                    description: 'Látogasson el Supetarba, Brač szigetének legnagyobb városába és fő kikötőjébe (kb. 10-15 perc autóút Sutivantól). Sétáljon az óvárosban, fedezze fel a bájos utcákat. Nézze meg a 18. századi Angyali Üdvözlet Plébániatemplomot. Sétáljon el a Sveti Nikola-félszigetre, ahol a hangulatos temető és a neobizánci stílusú Petrinović Mauzóleum található érdekes sírköveivel. Töltse a délután egy részét Supetar valamelyik strandján (pl. Banj vagy Vrilo strand) fürdőzéssel.',
+                    mapLink: 'https://www.google.com/maps/search/?api=1&query=Supetar, Brač',
+                    mapText: 'Supetar a Google Maps-en',
+                    practicalInfo: {
+                        openingHours: 'Általában napközben nyitva van (kb. 9:00-18:00).',
+                        notes: 'Supetar a sziget központja, számos szolgáltatással, üzlettel és étteremmel. Komp indulási pont Splitbe. Parkolási díj fizetős lehet.',
+                        accessibility: 'Autóval és busszal is könnyen megközelíthető. A városközpont gyalogosan bejárható.',
+                        officialLink: 'https://supetar.hr/'
+                    },
+                    sights: [
+                        { name: 'Angyali Üdvözlet Plébániatemplom', mapLink: 'https://www.google.com/maps/search/?api=1&query=Crkva+Navještenja+Marijina, Supetar',
+                        practicalInfo: {
+                            openingHours: 'Általában napközben nyitva van, de a szentmisék idején kiemelt figyelemmel látogatható.',
+                            accessibility: 'Gyalogosan könnyen megközelíthető a városközpontból.',
+                            notes: 'A templom a 18. századból származik, barokk stílusú.',
+                            officialLink: 'https://supetar.hr/key-to-heritage/cultural-sight/parish-church-complex/'
+                        }
+                        },
+                        { name: 'Petrinović Mauzóleum', mapLink: 'https://www.google.com/maps/search/?api=1&query=Petrinović+Mausoleum, Supetar',
+                        practicalInfo: {
+                            notes: 'Érdekes sírkövei miatt érdemes felkeresni, egyedi neobizánci stílusban épült.',
+                            accessibility: 'Supetar központjából kb. 15-20 perc sétával érhető el.',
+                            officialLink: 'https://myislandbrac.com/attraction/petrinovic-family-mausoleum/'
+                        }
+                        },
+                    ],
+                },
+                {
+                    day: 3,
+                    title: 'Történelmi Merülés Škripben és Kőfaragó Hagyományok Pučišćában',
+                    shortDescription: 'Škrip olajmúzeum, Pučišća kőfaragó iskola és kikötő.',
+                    description: 'Irány Škrip (kb. 15-20 perc autóút Sutivantól), Brač legrégebbi települése. Látogasson el az Olívaolaj Múzeumba (Muzej Uja), ahol megismerkedhet a hagyományos olívaolaj-készítéssel és kóstolhatja a helyi termékeket. Ezen kívül tekintse meg a Brač Sziget Múzeumát is, amely a sziget történelmét és kultúráját mutatja be. Folytassa útját Pučišćába (kb. 20-25 perc autóút Škriptől), a sziget híres kőfaragó városába. Csodálja meg a hófehér kőből épült házakat és palotákat. Látogasson el a Kőfaragó Iskolába (Klesarska škola), ahol bepillantást nyerhet a mesterségbe. Sétáljon a kikötőben, és nézze meg a 13 egykori védelmi tornyot.',
+                    mapLink: 'https://www.google.com/maps/search/?api=1&query=Škrip, Brač',
+                    mapText: 'Škrip a Google Maps-en',
+                    practicalInfo: {
+                        openingHours: 'Olívaolaj Múzeum: főszezonban általában 10:00-18:00 (ajánlott ellenőrizni!).',
+                        entranceFee: 'Olívaolaj Múzeum: kb. 5-7 EUR/fő. Kőfaragó Iskola: ingyenesen látogatható (túravezetésért lehet díj).',
+                        notes: 'Škrip egy kis falu, autóval könnyen megközelíthető. Pučišća gyönyörű látványt nyújt a kőből épült házaival.',
+                        accessibility: 'Autóval mindkét település megközelíthető. Škrip kis, gyalogosan könnyen bejárható falu. Pučišća központja gyalogosan felfedezhető, de a kikötőhöz lejtős az út.',
+                        officialLink: 'https://www.visitpuciscabrac.com/home'
+                    },
+                    sights: [
+                        { name: 'Olívaolaj Múzeum (Muzej Uja)', mapLink: 'https://www.google.com/maps/search/?api=1&query=Muzej+Uja, Škrip',
+                        practicalInfo: {
+                            openingHours: 'Főszezonban általában 10:00-18:00. Időszakosan változhat.',
+                            entranceFee: 'Kb. 5-7 EUR/fő (felnőtt).',
+                            accessibility: 'Autóval Škrip faluig, majd rövid séta a múzeumig.',
+                            notes: 'Érdemes megkóstolni a helyben készült olívaolajat.',
+                            officialLink: 'https://www.muzejuja.com/'
+                        }
+                        },
+                        { name: 'Pučišća', mapLink: 'https://www.google.com/maps/search/?api=1&query=Pučišća, Brač',
+                        practicalInfo: {
+                            notes: 'A "fehér város" néven is ismert a kőépületek miatt. Érdemes sétálni a kikötőben és a szűk utcácskákban.',
+                            accessibility: 'Autóval és busszal is elérhető. A település központja sétálva fedezhető fel.',
+                            officialLink: 'https://www.visitpuciscabrac.com/home'
+                        }
+                        },
+                        { name: 'Kőfaragó Iskola (Klesarska škola)', mapLink: 'https://www.google.com/maps/search/?api=1&query=Klesarska+škola, Pučišća',
+                        practicalInfo: {
+                            openingHours: 'Munkanapokon (általában hétfőtől péntekig 8:00-14:00). Nyáron néha hosszabb ideig.',
+                            notes: 'Lenyűgöző látni, ahogy a diákok a kővel dolgoznak. Van egy kis bolti rész is, ahol vásárolhat termékeket.',
+                            accessibility: 'Pučišća központjában található, gyalogosan könnyen elérhető.',
+                            officialLink: 'https://klesarskaskola.hr/en/'
+                        }
+                        },
+                    ],
+                },
+                {
+                    day: 4,
+                    title: 'Bol és a Világhírű Zlatni Rat',
+                    shortDescription: 'Aranyszarv strand, Bol városa és dominikánus kolostor.',
+                    description: 'Induljon el Bol felé (kb. 45-55 perc autóút Sutivantól), a sziget legélénkebb üdülőhelyére. A nap fénypontja a Zlatni Rat (Aranyszarv) Strand lesz. Töltse a délután nagy részét ezen a különleges strandon napozással, úszással vagy vízi sportokkal. Sétáljon Bol városában, fedezze fel a bájos utcákat, üzleteket és éttermeket. Látogassa meg a festői félszigeten található Dominikánus Kolostort, amely egyedülálló műkincsgyűjteménnyel rendelkezik.',
+                    mapLink: 'https://www.google.com/maps/search/?api=1&query=Bol, Brač',
+                    mapText: 'Bol a Google Maps-en',
+                    practicalInfo: {
+                        notes: 'Bol a sziget egyik legturisztikusabb települése, nyáron zsúfoltabb lehet. A Zlatni Rat strandra a városból kisvonattal (kb. 3-4 EUR/út) vagy kellemes sétával (kb. 20-30 perc) is el lehet jutni. Napernyő és napágy bérelhető (kb. 10-15 EUR/nap szett).',
+                        accessibility: 'Autóval, busszal is elérhető Bol. A Zlatni Rat strandra kisvonattal, taxihajóval vagy sétálva lehet eljutni.',
+                        officialLink: 'https://www.bol.hr/en/tourism/'
+                    },
+                    sights: [
+                        { name: 'Zlatni Rat Strand', mapLink: 'https://www.google.com/maps/search/?api=1&query=Zlatni+Rat+Beach, Bol',
+                        practicalInfo: {
+                            notes: 'A formája a szél és az áramlatok miatt változik. Kiváló szörfös hely. Különböző vízi sport lehetőségek (szörfiskola, jet-ski bérlés).',
+                            accessibility: 'Lásd a fő leírást (kisvonat, taxihajó, séta).',
+                            officialLink: 'https://www.bol.hr/en/tourism/'
+                        }
+                        },
+                        { name: 'Dominikánus Kolostor (Bol)', mapLink: 'https://www.google.com/maps/search/?api=1&query=Dominikanski+Samostan, Bol',
+                        practicalInfo: {
+                            openingHours: 'Általában 10:00-12:00 és 17:00-19:00 (ellenőrizze a pontos nyitvatartást!), vasárnap zárva.',
+                            entranceFee: 'Van belépődíj (néhány EUR).',
+                            accessibility: 'Bol központjából rövid sétával elérhető a tengerparton.',
+                            officialLink: 'https://www.bolcroatia.com/all-about-bol/dominican-monastery-museum-in-bol/'
+                        }
+                        },
+                    ],
+                },
+                {
+                    day: 5,
+                    title: 'Panoráma a Vidova Goráról és a Misztikus Sárkánybarlang',
+                    shortDescription: 'Vidova Gora panoráma és a titokzatos Sárkánybarlang.',
+                    description: 'Hódítsa meg a Vidova Gorát (778 m), az Adria szigeteinek legmagasabb pontját. Autóval is felmehet a csúcsra, vagy választhatja a túrázást Boltól. Fent lélegzetelállító panoráma várja a környező szigetekre és a szárazföldre. Van egy kis vendéglő is, ahol megpihenhet. Látogasson el a Sárkánybarlanghoz (Zmajeva Špilja) Murvica falu közelében (Murvica Boltól nyugatra található, kb. 10-15 perc autóút). Ez a misztikus barlang egykor glagolita szerzetesek lakhelye volt, és titokzatos domborműveket rejt. Csak szervezett túrák keretében látogatható idegenvezetővel. Érdemes előre egyeztetni a látogatást!',
+                    mapLink: 'https://www.google.com/maps/search/?api=1&query=Vidova+Gora, Brač',
+                    mapText: 'Vidova Gora a Google Maps-en',
+                    practicalInfo: {
+                        openingHours: 'Vidova Gora: Mindig nyitva. Vendéglő: szezonális nyitvatartás, általában napközben.',
+                        entranceFee: 'Vidova Gora: ingyenes. Sárkánybarlang: belépődíj kb. 10-15 EUR/fő (csak idegenvezetővel látogatható).',
+                        bookingInfo: 'Sárkánybarlang: Túrákat általában a helyi utazási irodák szerveznek (pl. Bolban). Foglalás erősen ajánlott, különösen főszezonban.',
+                        notes: 'A Vidova Gorára vezető út utolsó szakasza szűk és meredek lehet. Túracipő ajánlott a Sárkánybarlanghoz. Vigyen magával vizet!',
+                        accessibility: 'Vidova Gora: autóval fel lehet menni a csúcsra (aszfaltozott út), de túraútvonalak is vezetnek fel (pl. Boltól). Sárkánybarlang: Murvicából induló túra keretében, gyalogosan, meredek ösvényen érhető el (kb. 20-30 perc séta felfelé).',
+                        officialLink: 'https://myislandbrac.com/attraction/vidova-gora/'
+                    },
+                    sights: [
+                        { name: 'Sárkánybarlang (Zmajeva Špilja)', mapLink: 'https://www.google.com/maps/search/?api=1&query=Zmajeva+Špilja, Murvica',
+                        practicalInfo: {
+                            openingHours: 'Csak szervezett túra keretében látogatható, a túravezetővel egyeztetve.',
+                            entranceFee: 'Kb. 10-15 EUR/fő (a túra árában benne van).',
+                            bookingInfo: 'Előzetes foglalás szükséges a túravezetőnél vagy irodánál.',
+                            accessibility: 'Gyalogosan, szervezett túra keretében, meredek terepen. A Murvica faluig autóval el lehet jutni.',
+                            notes: 'A barlangban ősi domborművek találhatók, misztikus hangulatú.',
+                            officialLink: 'https://myislandbrac.com/attraction/dragons-cave-murvica/'
+                        }
+                        },
+                    ],
+                },
+                {
+                    day: 6,
+                    title: 'Pihenés, Strandolás vagy Hajókirándulás',
+                    shortDescription: 'Relax nap: Helyi strandok, vagy izgalmas hajókirándulás.',
+                    description: 'Ezen a napon pihenhet egyet Sutivanban, élvezheti a helyi strandokat, vagy választhat egy szervezett hajókirándulást. Számos ügynökség kínál hajókirándulásokat Bračról. Választhatja a híres Kék Barlang (Biševo sziget) és Hvar sziget meglátogatását, vagy egy rövidebb kirándulást Brač eldugott öbleibe. Keresse a helyi turisztikai irodákat vagy hajós cégeket Sutivanban vagy Supetarban.',
+                    mapLink: '', // Nincs specifikus térkép link ehhez a naphoz
+                    mapText: '',
+                    practicalInfo: {
+                        bookingInfo: 'Hajókirándulásokat a helyi turisztikai irodákban (Sutivan, Supetar, Bol) vagy a kikötőben lévő cégeknél foglalhat. Érdemes előre foglalni, különösen főszezonban. Árak: kb. 40-100 EUR/fő, útvonaltól függően (a Kék Barlang túrák drágábbak, akár 80-120 EUR/fő is lehetnek).',
+                        notes: 'A Kék Barlang látogatása nagyban függ az időjárástól és a tengeri viszonyoktól. Kérjen tájékoztatást a szolgáltatótól. Ne feledje a fényvédőt és a vizet!',
+                        accessibility: 'Hajóval, a túra szervezőjétől függően a kikötőig autóval is el lehet jutni.',
+                        officialLink: 'https://www.jadrolinija.hr/en'
+                    },
+                    sights: [],
+                },
+                {
+                    day: 7,
+                    title: 'Milna és a Nyugati Öblök',
+                    shortDescription: 'Milna bájos kikötője és a környező nyugodt öblök.',
+                    description: 'Utazzon Milnába (kb. 20-25 perc autóút Sutivantól), a sziget nyugati részén fekvő bájos halászfaluba, amelyet "ezer hajó öblének" is neveztek. Sétáljon a festői kikötőben, és csodálja meg a velencei stílusú épületeket. Fedezze fel Milna környékének nyugodt, kavicsos strandjait, mint például a Martinica Strand, az Osibova, a Lucice, vagy a Pasikova öböl. Ezek ideálisak a nyugodt fürdőzésre és sznorkelezésre.',
+                    mapLink: 'https://www.google.com/maps/search/?api=1&query=Milna, Brač',
+                    mapText: 'Milna a Google Maps-en',
+                    practicalInfo: {
+                        notes: 'Milna csendesebb, mint Bol vagy Supetar, ideális a pihenésre vágyóknak. A kikötőben számos étterem található friss halételekkel. Néhány öböl gyalog is elérhető, de hajóval még eldugottabb helyekre is eljuthat.',
+                        accessibility: 'Autóval könnyen megközelíthető. A település és a közeli öblök gyalogosan bejárhatók.',
+                        officialLink: 'https://tz-milna.hr/?lang=en'
+                    },
+                    sights: [
+                        { name: 'Martinica Strand (Milna közelében)', mapLink: 'https://www.google.com/maps/search/?api=1&query=Martinica+Beach, Milna, Brač',
+                        practicalInfo: {
+                            notes: 'Csendes, nyugodt öböl kristálytiszta vízzel. Ideális a kikapcsolódásra.',
+                            accessibility: 'Autóval vagy gyalogosan, távolságtól függően. Néhány öböl nehezebben megközelíthető, de hajóval is eljuthatunk oda.',
+                            officialLink: 'https://tz-milna.hr/beaches-and-bays/?lang=en'
+                        }
+                        },
+                    ],
+                },
+                {
+                    day: 8,
+                    title: 'Postira és a Homokos Lovrečina Strand',
+                    shortDescription: 'Postira halászfalu és a gyönyörű homokos Lovrečina strand.',
+                    description: 'Látogasson el Postirába (kb. 20 perc autóút Sutivantól), egy másik bájos halászfaluba a sziget északi partján. Sétáljon a kikötőben és élvezze a helyi atmoszférát. Irány a Lovrečina Strand (Postira közelében, kb. 5-10 perc autóút). Ez egy gyönyörű, homokos öböl, amelyet sűrű fenyőerdő vesz körül, természetes árnyékot biztosítva. Ideális családok és kisgyermekek számára, mivel a víz sekély és lassan mélyülő. A strand közelében ókori római bazilika romjai is találhatók – érdemes megtekinteni egy kis kulturális kitérőként.',
+                    mapLink: 'https://www.google.com/maps/search/?api=1&query=Postira, Brač',
+                    mapText: 'Postira a Google Maps-en',
+                    practicalInfo: {
+                        notes: 'Postira békés hangulatú, ideális a kikapcsolódásra. A Lovrečina strandra érdemes korán érkezni, hogy legyen helye, különösen főszezonban. A strand melletti romok szabadon látogathatók.',
+                        accessibility: 'Autóval Postira és a strand is könnyen elérhető. A strandhoz közel parkoló is található.',
+                        officialLink: 'https://www.postira.hr/en/'
+                    },
+                    sights: [
+                        { name: 'Lovrečina Strand (Postira közelében)', mapLink: 'https://www.google.com/maps/search/?api=1&query=Lovrečina+Beach, Postira, Brač',
+                        practicalInfo: {
+                            notes: 'A homokos part és a sekély víz miatt kisgyermekes családoknak ideális. Római romok is vannak a közelben.',
+                            accessibility: 'Autóval vagy busszal Postiráig, onnan gyalog vagy autóval a strandig.',
+                            officialLink: 'https://supetar.hr/key-to-heritage/cultural-sight/lovrecina-beach/'
+                        }
+                        },
+                    ],
+                },
+                {
+                    day: 9,
+                    title: 'Blaca Kolostor vagy Ismétlődő Kedvenc / Borászat',
+                    shortDescription: 'Választás: Elszigetelt kolostor, kedvenc helyek, vagy borkóstoló.',
+                    description: 'Ha még nem látogatta meg, szánjon egy fél napot a Blaca Kolostor (Pustinja Blaca) meglátogatására. Ne feledje, ez egy elszigetelt hely, és Murvicából szervezett túrák keretében közelíthető meg. Kalandosabb program, de megéri. Érdemes előre egyeztetni a látogatást!',
+                    mapLink: 'https://www.google.com/maps/search/?api=1&query=Pustinja+Blaca, Brač',
+                    mapText: 'Blaca Kolostor a Google Maps-en',
+                    practicalInfo: {
+                        openingHours: 'Blaca Kolostor Múzeum: főszezonban általában hétfő kivételével 9:00-17:00 (ősztől-tavaszig rövidebb). Mindig ellenőrizze a pontos nyitvatartást a látogatás előtt!',
+                        bookingInfo: 'A kolostor csak szervezett túrával, vezető kíséretével látogatható. Ajánlott előre, telefonon vagy e-mailben foglalni a helyi turisztikai irodákon keresztül.',
+                        entranceFee: 'Felnőtt belépődíj: kb. 7-10 EUR. Gyerek belépődíj: kb. 3-5 EUR (csak tájékoztató jellegű, változhat).',
+                        notes: 'A kolostorhoz vezető út túracipőben vagy kényelmes, stabil lábbeliben javasolt. Vigyen magával vizet, mivel a helyszínen korlátozottak a lehetőségek.',
+                        accessibility: 'Autóval egy parkolóig lehet menni (Murvica felett), onnan kb. 15-20 perces gyaloglás (lefelé) egy ösvényen. A visszaút felfelé meredekebb.',
+                        officialLink: 'https://czk-brac.hr/index.php/2-uncategorised/1-o-pustinji-blaca' // Javítva: .hr végződés
+                    },
+                    sights: [
+                        { name: 'Stina Winery (Bol)', mapLink: 'https://www.google.com/maps/search/?api=1&query=Stina+Winery, Bol, Brač',
+                        practicalInfo: {
+                            openingHours: 'Általában 10:00-22:00, főszezonban tovább. Időpontfoglalás a kóstolóra ajánlott.',
+                            notes: 'A Bol kikötőjében található, modern borászat, Brač borainak egyik legismertebb képviselője.',
+                            accessibility: 'Bol központjában található, gyalogosan könnyen elérhető.',
+                            officialLink: 'https://wine-tasting.eu/'
+                        }
+                        },
+                    ],
+                },
+                {
+                    day: 10,
+                    title: 'Elutazás',
+                    shortDescription: 'Búcsú Brač szigetétől: Utolsó reggeli és hazautazás.',
+                    description: 'Élvezze az utolsó reggelit Sutivanban. Tegyen egy utolsó sétát a parton, vagy fürödjön egyet a tengerben. Elutazás Brač szigetéről.',
+                    mapLink: '',
+                    mapText: '',
+                    practicalInfo: {
+                        notes: 'Indulás előtt ellenőrizze a komp menetrendjét (Supetar-Split vagy Sumartin-Makarska) és a forgalmi viszonyokat. Javasolt a kompjegyek online foglalása főszezonban, hogy elkerülje a várakozást.',
+                        officialLink: 'https://www.jadrolinija.hr/en'
+                    },
+                    sights: [],
+                },
+            ];
+
+            // A főbb strandok összefoglalása - Google Maps linkekkel bővítve
+            const beachesSummary = [
+                { name: 'Zlatni Rat (Aranyszarv)', description: 'Bol, kavicsos, ikonikus, vízi sportok.', mapLink: 'https://www.google.com/maps/search/?api=1&query=Zlatni+Rat+Beach, Bol, Brač' },
+                { name: 'Lovrečina', description: 'Postira közelében, homokos, családbarát, római romok.', mapLink: 'https://www.google.com/maps/search/?api=1&query=Lovrečina+Beach, Postira, Brač' },
+                { name: 'Sutivan strandjai', description: 'Sutivan, kavicsos, nyugodt, helyi.', mapLink: 'https://www.google.com/maps/search/?api=1&query=Sutivan+Beach, Brač' },
+                { name: 'Supetar strandjai', description: 'Supetar, kavicsos, könnyen megközelíthető.', mapLink: 'https://www.google.com/maps/search/?api=1&query=Supetar+Beach, Brač' },
+                { name: 'Martinica', description: 'Milna közelében, kavicsos, csendes.', mapLink: 'https://www.google.com/maps/search/?api=1&query=Martinica+Beach, Milna, Brač' },
+                { name: 'Murvica', description: 'Bol közelében, kavicsos, szép természeti környezet.', mapLink: 'https://www.google.com/maps/search/?api=1&query=Murvica+Beach, Bol, Brač' },
+            ];
+
+            // Komponens a lista nézethez
+            const ListView = ({ itinerary, onDayClick }) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {itinerary.map((dayData) => (
+                        <div
+                            key={dayData.day}
+                            className="bg-white bg-opacity-90 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 cursor-pointer overflow-hidden border-2 border-blue-200"
+                            onClick={() => onDayClick(dayData.day)}
+                        >
+                            <div className="p-5">
+                                <h3 className="text-xl font-bold text-blue-700 mb-2">Nap {dayData.day}: {dayData.title}</h3>
+                                <p className="text-gray-700 text-base">{dayData.shortDescription}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            );
+
+            // Komponens a részletes nézethez
+            const DetailView = ({ dayData, onBackClick }) => (
+                <div className="bg-white bg-opacity-90 rounded-xl shadow-lg p-6 md:p-8">
+                    <button
+                        onClick={onBackClick}
+                        className="mb-6 px-6 py-2 bg-blue-600 text-white font-semibold rounded-full shadow-md hover:bg-blue-700 transition-colors duration-300 flex items-center"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                        Vissza a listához
+                    </button>
+
+                    <h2 className="text-4xl font-extrabold text-blue-700 mb-6 border-b-4 border-blue-300 pb-3">
+                        Nap {dayData.day}: {dayData.title}
+                    </h2>
+
+                    <div className="flex flex-col md:flex-row items-center md:items-start gap-8 mb-8">
+                        <div className="w-full">
+                            <p className="text-lg mb-6 leading-relaxed text-gray-800">{dayData.description}</p>
+                            <PracticalInfoBox info={dayData.practicalInfo} mapLink={dayData.mapLink} mapText={dayData.mapText} officialLink={dayData.practicalInfo.officialLink} />
+                        </div>
+                    </div>
+
+                    {dayData.sights.length > 0 && (
+                        <div className="mt-8">
+                            <h3 className="text-2xl font-bold text-blue-600 mb-5 border-b-2 border-blue-200 pb-2">További látnivalók ezen a napon:</h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                                {dayData.sights.map((sight, index) => (
+                                    <div key={index} className="bg-blue-50 bg-opacity-70 p-5 rounded-lg shadow-sm border border-blue-100 flex flex-col items-center text-center group">
+                                        <p className="font-semibold text-xl text-gray-800 mb-2">{sight.name}</p>
+                                        {sight.practicalInfo && (
+                                            <PracticalInfoBox info={sight.practicalInfo} mapLink={sight.mapLink} mapText="Térkép" officialLink={sight.practicalInfo.officialLink} />
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+
+            return (
+                // Fő konténer reszponzív kitöltéssel és háttérrel
+                <div className="min-h-screen bg-gradient-to-br from-blue-100 to-indigo-100 p-4 sm:p-6 md:p-8 font-['Inter'] text-gray-800 rounded-lg shadow-lg">
+                    {selectedDay === null ? (
+                        <> {/* Fragment a több elemért */}
+                            {/* Fejléc szekció - Szöveges leírás a szigetről */}
+                            <header className="text-center mb-10 p-4 bg-white bg-opacity-80 rounded-lg shadow-md">
+                                <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-blue-700 leading-tight">
+                                    Brač Sziget: 10 Napos Útiterv Sutivanból
+                                </h1>
+                                <p className="mt-3 text-lg sm:text-xl text-gray-600">Fedezze fel Dalmácia gyöngyszemét!</p>
+                                {/* Rövid bevezető */}
+                                <div className="mt-4 text-base md:text-lg text-gray-700 leading-relaxed max-w-3xl mx-auto text-justify">
+                                    <p className="mb-4">
+                                        Brač, a harmadik legnagyobb horvát sziget az Adriai-tengeren, Dalmácia szívében fekszik.
+                                        Gazdag történelemmel, lenyűgöző természeti szépséggel és a híres "brači kővel" büszkélkedhet,
+                                        amelyet a Diokleciánusz-palota és a Fehér Ház építéséhez is felhasználtak.
+                                    </p>
+                                    <p className="mb-4">
+                                        A sziget változatos tájai, a festői halászfalvaktól a kőfaragó hagyományokig,
+                                        és a Vidova Gora csúcsáról nyíló panorámáig felejthetetlen élményt kínálnak.
+                                        Brač a nyugodt pihenés, az aktív kikapcsolódás és a gazdag kulturális örökség tökéletes ötvözete.
+                                    </p>
+                                    <p>
+                                        Fedezze fel a kristálytiszta vizű öblöket, a hangulatos kis településeket,
+                                        és merüljön el a dalmát életérzésben!
+                                    </p>
+                                </div>
+                                {/* További részletek gomb és kibontott tartalom */}
+                                {showFullIntro && (
+                                    <div className="mt-4 text-base md:text-lg text-gray-700 leading-relaxed max-w-3xl mx-auto text-justify">
+                                         <h3 className="text-xl font-bold text-blue-600 mb-2 mt-6">Brač látnivalói</h3>
+                                        <p className="mb-4">
+                                            Brač nemcsak strandjaival, hanem különleges történeteivel és rejtett kincseivel is rabul ejti az ide látogatót.
+                                            A sziget legikonikusabb látványossága a híres Zlatni Rat, vagyis az Aranyszarv strand Bol település mellett.
+                                            Ez a hófehér kavicsos földnyelv a szél és a tengeri áramlatok hatására folyamatosan változtatja formáját,
+                                            így minden pillanatban más arcát mutatja – igazi természeti csoda, amely az egész Adrián páratlan.
+                                        </p>
+                                        <p className="mb-4">
+                                            A sziget belső része is tartogat meglepetéseket: a Vidova Gora, a dalmát szigetvilág legmagasabb pontja 778 méteres magasságával
+                                            lenyűgöző panorámát kínál Hvar, Vis vagy akár a távoli olasz partok felé is, ha tiszta az idő.
+                                            A túrázók a fenyő- és ciprusligetek között haladva levendula- és rozmaringillatban barangolhatnak,
+                                            miközben szinte minden ösvényről feltűnik a csillogó tenger.
+                                        </p>
+                                        <p className="mb-4">
+                                            Érdekesség, hogy Brač mészköve messze földön híres: a legenda szerint ebből épült a washingtoni Fehér Ház is –
+                                            de tény, hogy a Diokleciánusz-palota Splitben és számos velencei palota is innen nyerte ragyogó fehér kőburkolatát.
+                                            A kőfaragás mestersége ma is él a szigeten, és aki kíváncsi, ellátogathat egy helyi műhelybe vagy kőfaragó iskolába is.
+                                        </p>
+                                        <p className="mb-4">
+                                            A történelem szerelmeseinek kihagyhatatlan látnivaló a Pustinja Blaca, az elszigetelt kolostor,
+                                            amelyet szerzetesek egy meredek sziklafalba vájtak. A remeteség könyvtárral, csillagvizsgálóval
+                                            és évszázadok történeteivel várja a kíváncsi látogatót.
+                                        </p>
+                                        <p className="mb-4">
+                                            A hangulatos halászfalvak – Supetar, Postira vagy Milna – kőházai, szűk sikátorai
+                                            és tengerparti sétányai a lassú, mediterrán életérzést idézik.
+                                            Itt egy pohár hűsítő helyi bor mellett hallgatni a kabócák énekét maga a tökéletes kikapcsolódás.
+                                        </p>
+                                         <p className="mb-4">
+                                            Brač szigetén a természet, a történelem és a vendégszeretet különleges harmóniában él együtt.
+                                            Legyen szó strandolásról, túrázásról vagy egy csendes esti vacsoráról egy családi tavernában,
+                                            Brač garantáltan felejthetetlen élményt nyújt mindenkinek.
+                                        </p>
+                                            <h3 className="text-xl font-bold text-blue-600 mb-2 mt-6">Brač történelme dióhéjban</h3>
+                                        <p className="mb-4">
+                                            Brač szigetének története egészen az őskorig nyúlik vissza, amit számos régészeti lelet bizonyít.
+                                            A szigetet illírek, majd görög gyarmatosítók és rómaiak is lakták.
+                                            A római uralom idején virágzott a mezőgazdaság, különösen az olívaolaj-termelés és a szőlészet.
+                                            Számos római villa, sír és gazdasági épület maradványai is megtalálhatók.
+                                        </p>
+                                        <p className="mb-4">
+                                            A középkorban a sziget a Bizánci Birodalom, majd a Horvát Királyság, később a Velencei Köztársaság fennhatósága alá került.
+                                            A velencei uralom (15. századtól a 18. század végéig) mély nyomot hagyott a sziget építészetében és kultúrájában,
+                                            amit a városok (például Supetar, Pučišća) velencei stílusú épületei is tanúsítanak.
+                                            A török hódítások idején a part menti települések megerősödtek, és erődöket építettek a védekezés céljából.
+                                        </p>
+                                        <p>
+                                            A velencei uralom után Brač rövid ideig osztrák, majd francia (napóleoni) fennhatóság alá került,
+                                            mielőtt véglegesen az Osztrák-Magyar Monarchia részévé vált a 19. században.
+                                            A 20. században Jugoszláviához, majd a független Horvátországhoz tartozott.
+                                            Ez a gazdag és változatos történelem formálta Brač mai arculatát,
+                                            és ad egyedi kulturális mélységet a szigetnek.
+                                        </p>
+                                           <h3 className="text-xl font-bold text-blue-600 mb-2 mt-6">Érdekességek</h3>
+                                        <p className="mb-4">
+                                      A szigeten még ma is élő hagyomány a kőfaragás, amit a helyi fiatalok iskolában is tanulhatnak.
+                                        </p>
+                                    </div>
+                                )}
+                                <button
+                                    onClick={() => setShowFullIntro(!showFullIntro)}
+                                    className="mt-4 px-5 py-2 bg-blue-500 text-white font-semibold rounded-full shadow-md hover:bg-blue-600 transition-colors duration-300"
+                                >
+                                    {showFullIntro ? 'Kevesebb részlet' : 'További részletek'}
+                                </button>
+                            </header>
+
+                            {/* Általános tippek szekció */}
+                            <section className="mb-10 p-6 bg-white bg-opacity-80 rounded-lg shadow-md">
+                                <h2 className="text-3xl font-bold text-blue-600 mb-4 border-b-2 border-blue-300 pb-2">Általános Tippek</h2>
+                                <ul className="list-disc list-inside space-y-2 text-lg">
+                                    <li><strong>Közlekedés:</strong> Érdemes autót bérelni a mobilitás és a rugalmasság érdekében.</li>
+                                    <li><strong>Flexibilitás:</strong> Ez csak egy javaslat. Nyugodtan cserélje fel a napokat, vagy pihenjen többet!</li>
+                                    <li><strong>Foglalás:</strong> Néhány túrára (pl. Sárkánybarlang, Blaca Kolostor) előzetes bejelentkezés szükséges lehet.</li>
+                                    <li><strong>Információk:</strong> Az oldalon már nincsenek képek, helyette szöveges leírások segítik a tájékozódást. Mindig javasolt a látogatás előtt ellenőrizni az aktuális információkat a hivatalos oldalakon!</li>
+                                </ul>
+                            </section>
+
+                            <ListView itinerary={itinerary} onDayClick={handleDayClick} />
+
+                            {/* Strandok összefoglaló szekció */}
+                            <section className="mt-10 p-6 bg-white bg-opacity-80 rounded-lg shadow-md">
+                                <h2 className="text-3xl font-bold text-blue-600 mb-4 border-b-2 border-blue-300 pb-2">Összefoglaló a Főbb Strandokról</h2>
+                                <ul className="list-disc list-inside space-y-2 text-lg">
+                                    {beachesSummary.map((beach, index) => (
+                                        <li key={index}>
+                                            <strong>{beach.name}:</strong> {beach.description}
+                                            {beach.mapLink && (
+                                                <a
+                                                    href={beach.mapLink}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-600 hover:text-blue-800 font-semibold underline text-sm ml-2"
+                                                >
+                                                    (Térkép)
+                                                </a>
+                                            )}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </section>
+
+                            {/* Nemzeti Ételek és Hagyományok szekció */}
+                            <section className="mt-10 p-6 bg-white bg-opacity-80 rounded-lg shadow-md">
+                                <h2 className="text-3xl font-bold text-blue-600 mb-4 border-b-2 border-blue-300 pb-2">Nemzeti Ételek és Hagyományok</h2>
+                                <p className="text-lg mb-4 text-gray-800">
+                                    Brač szigete és Dalmácia gasztronómiája a friss tenger gyümölcseire, a helyi olívaolajra, a bárányhúsra és a minőségi borokra épül.
+                                    Íme néhány dolog, amit érdemes megkóstolni:
+                                </p>
+                                <ul className="list-disc list-inside space-y-2 text-lg">
+                                    <li><strong>Pašticada:</strong> Hosszú ideig pácolt és főzött marhahúsétel, gnocchival tálalva. Dalmácia egyik ikonikus étele.</li>
+                                    <li><strong>Brodet:</strong> Halászlé különböző halfajtákból, hagyományosan polentával.</li>
+                                    <li><strong>Brački vitalac:</strong> Nyárson sült báránybelsőség, egy hagyományos brači specialitás.</li>
+                                    <li><strong>Helyi sajt és sonka (pršut):</strong> Kóstolja meg a házi készítésű sajtokat és a levegőn szárított sonkát.</li>
+                                    <li><strong>Olívaolaj:</strong> Brač szigetén kiváló minőségű olívaolaj készül, kóstolja meg és vásároljon belőle.</li>
+                                    <li><strong>Helyi borok:</strong> Különösen a vörösborok (pl. Plavac Mali szőlőből) népszerűek. Keresse a helyi pincészeteket.</li>
+                                    <li><strong>Fritule:</strong> Hagyományos horvát fánk, gyakran karácsonykor és ünnepeken fogyasztják, de nyáron is megtalálható.</li>
+                                </ul>
+                                <p className="mt-4 text-lg text-gray-800">
+                                    A dalmát kultúra szerves része a "fjaka" – a semmittevés művészete, a pihenés és az élet élvezete.
+                                    Ne feledje, hogy a helyi piacokon és kisboltokban friss, szezonális termékeket talál, amelyek tovább gazdagítják a gasztronómiai élményt.
+                                </p>
+                            </section>
+
+                            {/* Lábléc */}
+                            <footer className="text-center mt-10 p-4 text-gray-600 text-sm">
+                                <p>&copy; 2025 Brač Sziget Útiterv. Minden jog fenntartva.</p>
+                            </footer>
+                        </>
+                    ) : (
+                        <DetailView
+                            dayData={itinerary.find((day) => day.day === selectedDay)}
+                            onBackClick={handleBackClick}
+                        />
+                    )}
+                </div>
+            );
+        };
+
+        // React alkalmazás renderelése a DOM-ba
+        const domNode = document.getElementById('root');
+        const root = ReactDOM.createRoot(domNode);
+        root.render(<App />);
+    </script>
+</body>
+</html>
