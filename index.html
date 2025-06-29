@@ -298,7 +298,7 @@
                     day: 7,
                     title: 'Milna és a Nyugati Öblök',
                     shortDescription: 'Milna bájos kikötője és a környező nyugodt öblök.',
-                    description: 'Utazzon Milnába (kb. 20-25 perc autóút Sutivantól), a sziget nyugati részén fekvő bájos halászfaluba, amelyet "ezer hajó öblének" is neveztek. Sétáljon a festői kikötőben, és csodálja meg a velencei stílusú épületeket. Fedezze fel Milna környékének nyugodt, kavicsos strandjait, mint például a Martinica Strand, az Osibova, a Lucice, vagy a Pasikova öböl. Ezek ideálisak a nyugodt fürdőzésre és sznorkelezésre.',
+                    description: 'Utazzon Milnába (kb. 20-25 perc autóút Sutivantól), a sziget nyugati részén fekvő bájos halászfaluba, amelyet "ezer hajó öblének" is neveztek. Sétáljon a festői kikötőben, és csodálja meg a velencei stílusú épületeket. Fedezze fel Milna környékének nyugodt, kavicsos strandjait, mint például a Veternica strand, az Osibova, a Lucice, vagy a Pasikova öböl. Ezek ideálisak a nyugodt fürdőzésre és sznorkelezésre.',
                     mapLink: 'https://www.google.com/maps/search/?api=1&query=Milna, Brač',
                     mapText: 'Milna a Google Maps-en',
                     practicalInfo: {
@@ -307,11 +307,11 @@
                         officialLink: 'https://tz-milna.hr/?lang=en'
                     },
                     sights: [
-                        { name: 'Martinica Strand (Bol közelében)', mapLink: 'https://www.google.com/maps/search/?api=1&query=Martinica+Beach, Milna, Brač',
+                        { name: 'Uvala Osibova (Milna közelében)', mapLink: 'https://www.google.com/maps/search/?api=1&query=Plaža+Osibova',
                         practicalInfo: {
-                            notes: 'Csendes, nyugodt öböl kristálytiszta vízzel. Ideális a kikapcsolódásra.',
-                            accessibility: 'Autóval vagy gyalogosan, távolságtól függően. Néhány öböl nehezebben megközelíthető, de hajóval is eljuthatunk oda.',
-                            officialLink: 'https://tz-milna.hr/beaches-and-bays/?lang=en'
+                            notes: 'Nyugodt, kavicsos öböl kristálytiszta vízzel, természetes árnyékkal.',
+                            accessibility: 'Milna központjától rövid sétával elérhető, vagy autóval egy közeli parkolóig.',
+                            officialLink: 'https://myislandbrac.com/hr/plaza/osibova/'
                         }
                         },
                     ],
@@ -380,14 +380,43 @@
             ];
 
             // A főbb strandok összefoglalása - Google Maps linkekkel bővítve
-            const beachesSummary = [
-                { name: 'Zlatni Rat (Aranyszarv)', description: 'Bol, kavicsos, ikonikus, vízi sportok.', mapLink: 'https://www.google.com/maps/search/?api=1&query=Zlatni+Rat+Beach, Bol, Brač' },
-                { name: 'Lovrečina', description: 'Postira közelében, homokos, családbarát, római romok.', mapLink: 'https://www.google.com/maps/search/?api=1&query=Lovrečina+Beach, Postira, Brač' },
-                { name: 'Sutivan strandjai', description: 'Sutivan, kavicsos, nyugodt, helyi.', mapLink: 'https://www.google.com/maps/search/?api=1&query=Sutivan+Beach, Brač' },
-                { name: 'Supetar strandjai', description: 'Supetar, kavicsos, könnyen megközelíthető.', mapLink: 'https://www.google.com/maps/search/?api=1&query=Supetar+Beach, Brač' },
-                { name: 'Martinica', description: 'Milna közelében, kavicsos, csendes.', mapLink: 'https://www.google.com/maps/search/?api=1&query=Martinica+Beach, Milna, Brač' },
-                { name: 'Murvica', description: 'Bol közelében, kavicsos, szép természeti környezet.', mapLink: 'https://www.google.com/maps/search/?api=1&query=Murvica+Beach, Bol, Brač' },
-            ];
+           const beachesSummary = [
+               { 
+                   name: 'Zlatni Rat (Aranyszarv)', 
+                   description: 'Bol, kavicsos, ikonikus, vízi sportok. (déli part)', 
+                   mapLink: 'https://www.google.com/maps/search/?api=1&query=Zlatni+Rat+Beach, Bol, Brač' 
+               },
+               { 
+                   name: 'Lovrečina', 
+                   description: 'Postira közelében, homokos, családbarát, római romok. (északkeleti part)', 
+                   mapLink: 'https://www.google.com/maps/search/?api=1&query=Lovrečina+Beach, Postira, Brač' 
+               },
+               { 
+                   name: 'Sutivan strandjai', 
+                   description: 'Sutivan, kavicsos, nyugodt, helyi. (északnyugati part)', 
+                   mapLink: 'https://www.google.com/maps/search/?api=1&query=Sutivan+Beach, Brač' 
+               },
+               { 
+                   name: 'Supetar strandjai', 
+                   description: 'Supetar, kavicsos, könnyen megközelíthető. (északi part)', 
+                   mapLink: 'https://www.google.com/maps/search/?api=1&query=Supetar+Beach, Brač' 
+               },
+               { 
+                   name: 'Martinica', 
+                   description: 'Bol közelében, kavicsos, csendes. (déli part)', 
+                   mapLink: 'https://www.google.com/maps/search/?api=1&query=Martinica+Beach, Milna, Brač' 
+               },
+               { 
+                   name: 'Murvica', 
+                   description: 'Bol közelében, kavicsos, szép természeti környezet. (déli part)', 
+                   mapLink: 'https://www.google.com/maps/search/?api=1&query=Murvica+Beach, Bol, Brač' 
+               },
+               { 
+                   name: 'Uvala Osibova', 
+                   description: 'Természeti szépségeiről ismert kavicsos‑köves strand Milna közelében, Brac nyugati részén. (nyugati part)', 
+                   mapLink: 'https://www.google.com/maps/search/?api=1&query=Plaža+Osibova' 
+               },
+           ];
 
             // Komponens a lista nézethez
             const ListView = ({ itinerary, onDayClick }) => (
